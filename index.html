@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pembuat Soal Ujian Guru</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #333;
+        }
+        .container {
+            max-width: 960px;
+            margin: 2rem auto;
+            padding: 1.5rem;
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        select {
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            width: 100%;
+            transition: border-color 0.2s;
+        }
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #3b82f6; /* Blue-500 */
+        }
+        label {
+            font-weight: 500;
+            color: #4b5563;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .btn-primary:hover {
+            background-color: #2563eb;
+        }
+        .btn-secondary {
+            background-color: #e2e8f0;
+            color: #4b5563;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            border: 1px solid #cbd5e1;
+        }
+        .btn-secondary:hover {
+            background-color: #cbd5e1;
+        }
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #3b82f6;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: none; /* Hidden by default */
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .message-box {
+            background-color: #dbeafe; /* Blue-100 */
+            color: #1e40af; /* Blue-800 */
+            border: 1px solid #93c5fd; /* Blue-300 */
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            display: none;
+            text-align: center;
+        }
+        .message-box.error {
+            background-color: #fee2e2; /* Red-100 */
+            color: #991b1b; /* Red-800 */
+            border-color: #fca5a5; /* Red-300 */
+        }
+        .error-message {
+            color: #ef4444; /* Red-500 */
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-6 lg:p-8">
+    <div class="container">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Pembuat Soal Ujian</h1>
+        <p class="text-center text-gray-600 mb-8">
+            Isi formulir di bawah ini untuk menghasilkan soal ujian yang sesuai dengan materi yang telah Anda ajarkan.
+            <br>
+            **Soal akan dibuat berdasarkan indikator dan materi yang Anda input, menghindari soal yang "tidak pernah diajarkan".**
+        </p>
+
+        <form id="examForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Kolom Kiri -->
+            <div>
+                <div class="form-group">
+                    <label for="namaGuru">Nama Guru:</label>
+                    <input type="text" id="namaGuru" name="namaGuru" placeholder="Contoh: Budi Santoso" required class="focus:ring-2 focus:ring-blue-300">
+                </div>
+                <div class="form-group">
+                    <label for="namaSekolah">Nama Sekolah:</label>
+                    <input type="text" id="namaSekolah" name="namaSekolah" placeholder="Contoh: SMA Negeri 1 Jakarta" required class="focus:ring-2 focus:ring-blue-300">
+                </div>
+                <div class="form-group">
+                    <label for="mataPelajaran">Mata Pelajaran:</label>
+                    <input type="text" id="mataPelajaran" name="mataPelajaran" placeholder="Contoh: Bahasa Indonesia" required class="focus:ring-2 focus:ring-blue-300">
+                </div>
+                <div class="form-group">
+                    <label for="kelasSemester">Kelas & Semester:</label>
+                    <input type="text" id="kelasSemester" name="kelasSemester" placeholder="Contoh: VIII & Genap" required class="focus:ring-2 focus:ring-blue-300">
+                </div>
+                <div class="form-group">
+                    <label for="jenisPenilaian">Jenis Penilaian:</label>
+                    <input type="text" id="jenisPenilaian" name="jenisPenilaian" placeholder="Contoh: PTS" required class="focus:ring-2 focus:ring-blue-300">
+                </div>
+                <div class="form-group">
+                    <label for="kurikulum">Kurikulum:</label>
+                    <select id="kurikulum" name="kurikulum" required class="focus:ring-2 focus:ring-blue-300">
+                        <option value="">Pilih Kurikulum</option>
+                        <option value="K13">K13</option>
+                        <option value="Merdeka">Merdeka</option>
+                        <option value="Lainnya">Lainnya</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="tujuanPembelajaran">Tujuan Pembelajaran (TP/KD/CP):</label>
+                    <textarea id="tujuanPembelajaran" name="tujuanPembelajaran" rows="3" placeholder="Contoh: Menganalisis struktur dan kaidah kebahasaan teks eksposisi." required class="focus:ring-2 focus:ring-blue-300"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="indikatorDiajarkan">Indikator yang sudah diajarkan (pisahkan dengan koma):</label>
+                    <textarea id="indikatorDiajarkan" name="indikatorDiajarkan" rows="3" placeholder="Contoh: Mengidentifikasi bagian-bagian teks eksposisi, Menentukan pola pengembangan teks eksposisi." required class="focus:ring-2 focus:ring-blue-300"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="materiDiajarkan">Materi yang sudah diajarkan (per topik, pisahkan dengan baris baru):</label>
+                    <textarea id="materiDiajarkan" name="materiDiajarkan" rows="5" placeholder="Contoh:
+Struktur Teks Eksposisi
+Kaidah Kebahasaan Teks Eksposisi
+Pola Pengembangan Teks Eksposisi" required class="focus:ring-2 focus:ring-blue-300"></textarea>
+                </div>
+            </div>
+
+            <!-- Kolom Kanan -->
+            <div>
+                <div class="form-group">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Jumlah Soal:</label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="jumlahPG" class="text-sm">Pilihan Ganda:</label>
+                            <input type="number" id="jumlahPG" name="jumlahPG" value="0" min="0" class="focus:ring-2 focus:ring-blue-300">
+                        </div>
+                        <div>
+                            <label for="jumlahIsian" class="text-sm">Isian Singkat:</label>
+                            <input type="number" id="jumlahIsian" name="jumlahIsian" value="0" min="0" class="focus:ring-2 focus:ring-blue-300">
+                        </div>
+                        <div>
+                            <label for="jumlahUraian" class="text-sm">Uraian:</label>
+                            <input type="number" id="jumlahUraian" name="jumlahUraian" value="0" min="0" class="focus:ring-2 focus:ring-blue-300">
+                        </div>
+                        <div>
+                            <label for="jumlahAKM" class="text-sm">AKM/Soal Kontekstual:</label>
+                            <input type="number" id="jumlahAKM" name="jumlahAKM" value="0" min="0" class="focus:ring-2 focus:ring-blue-300">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="levelKognitif">Level Kognitif (Taksonomi Bloom: C1–C6):</label>
+                    <input type="text" id="levelKognitif" name="levelKognitif" placeholder="Contoh: C2, C3" required class="focus:ring-2 focus:ring-blue-300">
+                </div>
+                <div class="form-group">
+                    <label for="gayaBahasa">Gaya Bahasa Soal:</label>
+                    <select id="gayaBahasa" name="gayaBahasa" required class="focus:ring-2 focus:ring-blue-300">
+                        <option value="">Pilih Gaya Bahasa</option>
+                        <option value="Formal">Formal</option>
+                        <option value="Sehari-hari">Sehari-hari</option>
+                        <option value="Kontekstual">Kontekstual</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="petunjukPengerjaan">Petunjuk pengerjaan (opsional):</label>
+                    <textarea id="petunjukPengerjaan" name="petunjukPengerjaan" rows="3" placeholder="Contoh: Bacalah setiap soal dengan teliti sebelum menjawab." class="focus:ring-2 focus:ring-blue-300"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="waktuPengerjaan">Waktu pengerjaan (opsional):</label>
+                    <input type="text" id="waktuPengerjaan" name="waktuPengerjaan" placeholder="Contoh: 90 menit" class="focus:ring-2 focus:ring-blue-300">
+                </div>
+                <div class="form-group">
+                    <label for="catatanTambahan">Catatan tambahan (opsional):</label>
+                    <textarea id="catatanTambahan" name="catatanTambahan" rows="3" placeholder="Contoh: Untuk soal uraian, berikan penjelasan lengkap." class="focus:ring-2 focus:ring-blue-300"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="outputOption">Pilihan output:</label>
+                    <div class="flex items-center space-x-4">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="outputOption" value="soal_jawaban" class="form-radio text-blue-600" checked>
+                            <span class="ml-2">Tampilkan soal & jawaban langsung di halaman</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="outputOption" value="soal_saja" class="form-radio text-blue-600">
+                            <span class="ml-2">Tampilkan soal saja</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="md:col-span-2 text-center mt-6 flex flex-col sm:flex-row justify-center items-center gap-4">
+                <button type="submit" class="btn-primary w-full sm:w-auto">Buat Soal</button>
+                <button type="button" id="copyQuestionsBtn" class="btn-secondary w-full sm:w-auto hidden">Salin Soal</button>
+            </div>
+            <div class="md:col-span-2">
+                <div id="loadingSpinner" class="loading-spinner mt-4"></div>
+                <div id="errorMessage" class="error-message mt-4 hidden"></div>
+                <div id="messageBox" class="message-box mt-4"></div>
+            </div>
+        </form>
+
+        <hr class="my-8 border-gray-300">
+
+        <section id="resultsSection" class="mt-8 hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Hasil Soal Ujian</h2>
+            <div id="examHeader" class="mb-6 p-4 border rounded-lg bg-gray-50">
+                <!-- Header informasi ujian akan diisi di sini -->
+            </div>
+            <div id="examQuestions" class="prose max-w-none">
+                <!-- Soal ujian akan ditampilkan di sini -->
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const examForm = document.getElementById('examForm');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const errorMessage = document.getElementById('errorMessage');
+        const resultsSection = document.getElementById('resultsSection');
+        const examHeaderDiv = document.getElementById('examHeader');
+        const examQuestionsDiv = document.getElementById('examQuestions');
+        const copyQuestionsBtn = document.getElementById('copyQuestionsBtn');
+        const messageBox = document.getElementById('messageBox');
+
+        // Fungsi untuk menampilkan pesan temporer di messageBox
+        function showMessageBox(message, isError = false) {
+            messageBox.textContent = message;
+            messageBox.classList.remove('hidden', 'error');
+            if (isError) {
+                messageBox.classList.add('error');
+            }
+            setTimeout(() => {
+                messageBox.classList.add('hidden');
+                messageBox.classList.remove('error');
+            }, 3000); // Pesan akan hilang setelah 3 detik
+        }
+
+        // --- Local Storage Functions ---
+        const formFields = [
+            'namaGuru', 'namaSekolah', 'mataPelajaran', 'kelasSemester',
+            'jenisPenilaian', 'kurikulum', 'tujuanPembelajaran',
+            'indikatorDiajarkan', 'materiDiajarkan', 'jumlahPG',
+            'jumlahIsian', 'jumlahUraian', 'jumlahAKM', 'levelKognitif',
+            'gayaBahasa', 'petunjukPengerjaan', 'waktuPengerjaan',
+            'catatanTambahan'
+        ];
+
+        function saveFormData() {
+            const formData = {};
+            formFields.forEach(id => {
+                formData[id] = document.getElementById(id).value;
+            });
+            formData['outputOption'] = document.querySelector('input[name="outputOption"]:checked').value;
+            localStorage.setItem('examFormData', JSON.stringify(formData));
+        }
+
+        function loadFormData() {
+            const savedData = localStorage.getItem('examFormData');
+            if (savedData) {
+                const formData = JSON.parse(savedData);
+                formFields.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.value = formData[id] || '';
+                    }
+                });
+                // Restore radio button selection
+                if (formData['outputOption']) {
+                    const selectedRadio = document.querySelector(`input[name="outputOption"][value="${formData['outputOption']}"]`);
+                    if (selectedRadio) {
+                        selectedRadio.checked = true;
+                    }
+                }
+            }
+        }
+
+        // Attach event listeners for saving data
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFormData(); // Load data when page loads
+
+            // Add input event listeners to save data on change
+            formFields.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('input', saveFormData);
+                    element.addEventListener('change', saveFormData); // For select elements
+                }
+            });
+            // For radio buttons, listen to change on the group
+            document.querySelectorAll('input[name="outputOption"]').forEach(radio => {
+                radio.addEventListener('change', saveFormData);
+            });
+        });
+        // --- End Local Storage Functions ---
+
+        examForm.addEventListener('submit', async (event) => {
+            event.preventDefault(); // Mencegah form submit secara default
+
+            errorMessage.classList.add('hidden'); // Sembunyikan pesan error sebelumnya
+            resultsSection.classList.add('hidden'); // Sembunyikan hasil sebelumnya
+            examQuestionsDiv.innerHTML = ''; // Bersihkan soal sebelumnya
+            examHeaderDiv.innerHTML = ''; // Bersihkan header sebelumnya
+            copyQuestionsBtn.classList.add('hidden'); // Sembunyikan tombol salin
+            messageBox.classList.add('hidden'); // Sembunyikan message box
+
+            loadingSpinner.style.display = 'block'; // Tampilkan spinner
+
+            // Dapatkan nilai dari setiap input form
+            const namaGuru = document.getElementById('namaGuru').value.trim();
+            const namaSekolah = document.getElementById('namaSekolah').value.trim();
+            const mataPelajaran = document.getElementById('mataPelajaran').value.trim();
+            const kelasSemester = document.getElementById('kelasSemester').value.trim();
+            const jenisPenilaian = document.getElementById('jenisPenilaian').value.trim();
+            const kurikulum = document.getElementById('kurikulum').value.trim();
+            const tujuanPembelajaran = document.getElementById('tujuanPembelajaran').value.trim();
+            const indikatorDiajarkan = document.getElementById('indikatorDiajarkan').value.trim();
+            const materiDiajarkan = document.getElementById('materiDiajarkan').value.trim();
+            const jumlahPG = parseInt(document.getElementById('jumlahPG').value) || 0;
+            const jumlahIsian = parseInt(document.getElementById('jumlahIsian').value) || 0;
+            const jumlahUraian = parseInt(document.getElementById('jumlahUraian').value) || 0;
+            const jumlahAKM = parseInt(document.getElementById('jumlahAKM').value) || 0;
+            const levelKognitif = document.getElementById('levelKognitif').value.trim();
+            const gayaBahasa = document.getElementById('gayaBahasa').value.trim();
+            const petunjukPengerjaan = document.getElementById('petunjukPengerjaan').value.trim();
+            const waktuPengerjaan = document.getElementById('waktuPengerjaan').value.trim();
+            const catatanTambahan = document.getElementById('catatanTambahan').value.trim();
+            const outputOption = document.querySelector('input[name="outputOption"]:checked').value;
+
+            // Validasi input minimal
+            if (!namaGuru || !namaSekolah || !mataPelajaran || !kelasSemester || !jenisPenilaian || !kurikulum || !tujuanPembelajaran || !indikatorDiajarkan || !materiDiajarkan || !levelKognitif || !gayaBahasa) {
+                errorMessage.textContent = 'Mohon lengkapi semua kolom yang wajib diisi (bergaris merah).';
+                errorMessage.classList.remove('hidden');
+                loadingSpinner.style.display = 'none';
+                return;
+            }
+
+            // Validasi setidaknya satu jenis soal diisi
+            const totalSoalDiminta = jumlahPG + jumlahIsian + jumlahUraian + jumlahAKM;
+            if (totalSoalDiminta === 0) {
+                errorMessage.textContent = 'Anda harus meminta setidaknya satu jenis soal.';
+                errorMessage.classList.remove('hidden');
+                loadingSpinner.style.display = 'none';
+                return;
+            }
+
+            if (totalSoalDiminta > 20) { // Batasi jumlah soal untuk performa dan menghindari timeout API
+                errorMessage.textContent = 'Jumlah soal maksimal adalah 20 untuk menjaga performa.';
+                errorMessage.classList.remove('hidden');
+                loadingSpinner.style.display = 'none';
+                return;
+            }
+
+
+            // Bangun prompt untuk Gemini API
+            const prompt = `
+            Anda adalah seorang generator soal ujian ahli untuk guru. Buatlah soal ujian berdasarkan informasi detail berikut:
+
+            Nama Guru: ${namaGuru}
+            Nama Sekolah: ${namaSekolah}
+            Mata Pelajaran: ${mataPelajaran}
+            Kelas & Semester: ${kelasSemester}
+            Jenis Penilaian: ${jenisPenilaian}
+            Kurikulum: ${kurikulum}
+            Tujuan Pembelajaran (TP/KD/CP): ${tujuanPembelajaran}
+            Indikator yang sudah diajarkan: ${indikatorDiajarkan}
+            Materi yang sudah diajarkan (per topik, pisahkan dengan baris baru):
+            ${materiDiajarkan}
+
+            Jumlah soal yang diminta:
+            - Pilihan Ganda: ${jumlahPG}
+            - Isian Singkat: ${jumlahIsian}
+            - Uraian: ${jumlahUraian}
+            - AKM/Soal Kontekstual: ${jumlahAKM}
+
+            Level kognitif (Taksonomi Bloom): ${levelKognitif}
+            Gaya bahasa soal: ${gayaBahasa}
+
+            ${petunjukPengerjaan ? `Petunjuk pengerjaan: ${petunjukPengerjaan}` : ''}
+            ${waktuPengerjaan ? `Waktu pengerjaan: ${waktuPengerjaan}` : ''}
+            ${catatanTambahan ? `Catatan tambahan: ${catatanTambahan}` : ''}
+
+            Output yang diinginkan: ${outputOption === 'soal_jawaban' ? 'Soal dan Jawaban' : 'Soal Saja'}
+
+            **ATURAN PENTING UNTUK PEMBUATAN SOAL (HARUS DIPATUHI SEPENUHNYA):**
+            1.  Soal **HANYA BOLEH diambil dari 'Indikator yang sudah diajarkan' dan 'Materi yang sudah diajarkan'** yang telah diberikan di atas.
+            2.  **DILARANG KERAS** improvisasi, menambahkan materi baru, atau melompat ke topik yang belum diajarkan yang tidak ada di daftar 'Materi yang sudah diajarkan' atau 'Indikator yang sudah diajarkan'.
+            3.  Setiap soal harus diikuti dengan catatan asal materi. Contoh format: 📌 “Soal ini diambil dari Materi: [Nama Materi]”
+            4.  Jika diminta "Soal Saja", jangan sertakan bagian jawaban. Jika diminta "Soal dan Jawaban", sertakan jawaban untuk setiap soal.
+            5.  Pastikan soal-soal bervariasi sesuai dengan jenis soal yang diminta dan level kognitif yang ditentukan.
+            6.  Pastikan struktur JSON yang Anda berikan valid dan lengkap.
+            7.  Jika ada keraguan mengenai relevansi soal dengan materi yang diberikan, lebih baik tidak membuat soal tersebut.
+            `;
+
+            try {
+                // Konfigurasi Gemini API
+                const apiKey = ""; // Dibiarkan kosong, akan diisi oleh runtime Canvas
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const payload = {
+                    contents: [{
+                        role: "user",
+                        parts: [{
+                            text: prompt
+                        }]
+                    }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "ARRAY",
+                            items: {
+                                type: "OBJECT",
+                                properties: {
+                                    type: { type: "STRING", enum: ["Pilihan Ganda", "Isian Singkat", "Uraian", "AKM/Soal Kontekstual"] },
+                                    question: { type: "STRING" },
+                                    options: { type: "ARRAY", items: { type: "STRING" }, description: "Required for Pilihan Ganda type" },
+                                    answer: { type: "STRING", description: "Required if 'Soal dan Jawaban' is chosen" },
+                                    sourceMaterial: { type: "STRING", description: "Format: 'Materi: [Nama Materi]'" }
+                                },
+                                required: ["type", "question", "sourceMaterial"]
+                            }
+                        }
+                    }
+                };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorDetail = await response.json();
+                    throw new Error(`API Error: ${response.status} - ${errorDetail.error?.message || 'Unknown error'}`);
+                }
+
+                const result = await response.json();
+                const generatedContent = result.candidates[0].content.parts[0].text;
+
+                // Parse the JSON string
+                const questions = JSON.parse(generatedContent);
+
+                // Tampilkan header ujian
+                examHeaderDiv.innerHTML = `
+                    <p class="mb-1"><strong>Nama Guru:</strong> ${namaGuru}</p>
+                    <p class="mb-1"><strong>Nama Sekolah:</strong> ${namaSekolah}</p>
+                    <p class="mb-1"><strong>Mata Pelajaran:</strong> ${mataPelajaran}</p>
+                    <p class="mb-1"><strong>Kelas & Semester:</strong> ${kelasSemester}</p>
+                    <p class="mb-1"><strong>Jenis Penilaian:</strong> ${jenisPenilaian}</p>
+                    ${petunjukPengerjaan ? `<p class="mb-1"><strong>Petunjuk Pengerjaan:</strong> ${petunjukPengerjaan}</p>` : ''}
+                    ${waktuPengerjaan ? `<p class="mb-1"><strong>Waktu Pengerjaan:</strong> ${waktuPengerjaan}</p>` : ''}
+                `;
+
+                let questionsHtml = '';
+                questions.forEach((q, index) => {
+                    questionsHtml += `<div class="mb-6 p-4 border border-gray-200 rounded-md bg-white shadow-sm">`;
+                    questionsHtml += `<h3 class="text-lg font-semibold mb-2">Soal No. ${index + 1} (${q.type})</h3>`;
+                    questionsHtml += `<p class="mb-3">${q.question}</p>`;
+
+                    if (q.type === 'Pilihan Ganda' && q.options && q.options.length > 0) {
+                        questionsHtml += `<ol class="list-alpha ml-6 mb-3">`;
+                        q.options.forEach((option) => {
+                            questionsHtml += `<li>${option}</li>`;
+                        });
+                        questionsHtml += `</ol>`;
+                    }
+
+                    if (outputOption === 'soal_jawaban' && q.answer) {
+                        questionsHtml += `<p class="font-medium text-green-700 mt-2"><strong>Jawaban:</strong> ${q.answer}</p>`;
+                    }
+
+                    if (q.sourceMaterial) {
+                        questionsHtml += `<p class="text-sm text-gray-500 mt-3">📌 “Soal ini diambil dari ${q.sourceMaterial}”</p>`;
+                    }
+                    questionsHtml += `</div>`;
+                });
+
+                examQuestionsDiv.innerHTML = questionsHtml;
+                resultsSection.classList.remove('hidden'); // Tampilkan bagian hasil
+                copyQuestionsBtn.classList.remove('hidden'); // Tampilkan tombol salin
+
+            } catch (error) {
+                console.error('Error generating questions:', error);
+                errorMessage.textContent = `Terjadi kesalahan saat membuat soal: ${error.message}. Mohon coba lagi.`;
+                errorMessage.classList.remove('hidden');
+            } finally {
+                loadingSpinner.style.display = 'none'; // Sembunyikan spinner
+            }
+        });
+
+        // --- Copy to Clipboard Functionality ---
+        copyQuestionsBtn.addEventListener('click', () => {
+            const headerText = examHeaderDiv.innerText;
+            const questionsText = examQuestionsDiv.innerText;
+            const fullText = headerText + '\n\n' + questionsText;
+
+            // Using document.execCommand('copy') for better compatibility in iframes
+            const textarea = document.createElement('textarea');
+            textarea.value = fullText;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                showMessageBox('Soal berhasil disalin ke clipboard!');
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+                showMessageBox('Gagal menyalin soal. Silakan salin manual.', true);
+            }
+            document.body.removeChild(textarea);
+        });
+        // --- End Copy to Clipboard Functionality ---
+    </script>
+</body>
+</html>
