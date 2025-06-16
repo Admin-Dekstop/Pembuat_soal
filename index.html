@@ -19,6 +19,7 @@
             background-color: #ffffff;
             border-radius: 0.75rem;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative; /* Tambahkan ini agar posisi ikon pengaturan relatif terhadap container */
         }
         input[type="text"],
         input[type="number"],
@@ -119,7 +120,7 @@
             padding-left: 1.5em; /* Adjust as needed */
         }
 
-        /* Modal Styles - NEW */
+        /* Modal Styles */
         .api-key-modal {
             position: fixed;
             top: 0;
@@ -206,10 +207,32 @@
         .modal-content .button-group .btn-close:hover {
             background-color: #4b5563; /* Gray-600 */
         }
+
+        /* Settings Icon Styles - NEW */
+        #settingsIcon {
+            position: absolute;
+            top: 1.5rem; /* Sesuaikan jarak dari atas */
+            right: 1.5rem; /* Sesuaikan jarak dari kanan */
+            cursor: pointer;
+            width: 32px; /* Ukuran ikon */
+            height: 32px;
+            color: #4b5563; /* Warna ikon */
+            transition: transform 0.2s ease-in-out, color 0.2s ease-in-out;
+            z-index: 10; /* Pastikan ikon di atas elemen lain */
+        }
+        #settingsIcon:hover {
+            transform: rotate(30deg); /* Efek putar saat hover */
+            color: #3b82f6; /* Warna saat hover */
+        }
     </style>
 </head>
 <body class="p-4 sm:p-6 lg:p-8">
     <div class="container">
+        <div id="settingsIcon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-full h-full">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.125 1.125 0 0 1 1.993 0c1.756.426 1.756 2.924 0 3.35a1.125 1.125 0 0 1 0 1.993c-.426 1.756-2.924 1.756-3.35 0a1.125 1.125 0 0 1-1.993 0c-1.756-.426-1.756-2.924 0-3.35a1.125 1.125 0 0 1 0-1.993Zm-1.724 10.593a1.125 1.125 0 0 1-.989 1.993c-1.756.426-1.756 2.924 0 3.35a1.125 1.125 0 0 1 0 1.993c-.426 1.756-2.924 1.756-3.35 0a1.125 1.125 0 0 1-1.993 0c-1.756-.426-1.756-2.924 0-3.35a1.125 1.125 0 0 1 0-1.993Zm9.462-2.022a1.125 1.125 0 0 1 .989-1.993c1.756-.426 1.756-2.924 0-3.35a1.125 1.125 0 0 1 0-1.993c.426-1.756 2.924-1.756 3.35 0a1.125 1.125 0 0 1 1.993 0c1.756.426 1.756 2.924 0 3.35a1.125 1.125 0 0 1 0 1.993Z" />
+            </svg>
+        </div>
         <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Pembuat Soal Ujian</h1>
         <p class="text-center text-gray-600 mb-8">
             Isi formulir di bawah ini untuk menghasilkan soal ujian yang sesuai dengan materi yang telah Anda ajarkan.
@@ -377,12 +400,15 @@ Pola Pengembangan Teks Eksposisi" required class="focus:ring-2 focus:ring-blue-3
         const copyQuestionsBtn = document.getElementById('copyQuestionsBtn');
         const messageBox = document.getElementById('messageBox');
 
-        // NEW: Modal Elements
+        // Modal Elements
         const geminiApiKeyModal = document.getElementById('geminiApiKeyModal');
         const modalGeminiApiKeyInput = document.getElementById('modalGeminiApiKeyInput');
         const modalSaveGeminiApiKeyBtn = document.getElementById('modalSaveGeminiApiKeyBtn');
         const modalClearGeminiApiKeyBtn = document.getElementById('modalClearGeminiApiKeyBtn');
         const modalCloseGeminiApiKeyBtn = document.getElementById('modalCloseGeminiApiKeyBtn');
+
+        // NEW: Settings Icon Element
+        const settingsIcon = document.getElementById('settingsIcon');
 
         // Fungsi untuk menampilkan pesan temporer di messageBox
         function showMessageBox(message, isError = false) {
@@ -436,7 +462,7 @@ Pola Pengembangan Teks Eksposisi" required class="focus:ring-2 focus:ring-blue-3
             }
         }
 
-        // NEW: Function to save Gemini API Key
+        // Function to save Gemini API Key
         function saveGeminiApiKey() {
             const apiKey = modalGeminiApiKeyInput.value.trim();
             if (apiKey) {
@@ -448,7 +474,7 @@ Pola Pengembangan Teks Eksposisi" required class="focus:ring-2 focus:ring-blue-3
             }
         }
 
-        // NEW: Function to clear Gemini API Key
+        // Function to clear Gemini API Key
         function clearGeminiApiKey() {
             localStorage.removeItem('geminiApiKey');
             modalGeminiApiKeyInput.value = '';
@@ -479,12 +505,17 @@ Pola Pengembangan Teks Eksposisi" required class="focus:ring-2 focus:ring-blue-3
                 radio.addEventListener('change', saveFormData);
             });
 
-            // NEW: Modal button event listeners
+            // Modal button event listeners
             modalSaveGeminiApiKeyBtn.addEventListener('click', saveGeminiApiKey);
             modalClearGeminiApiKeyBtn.addEventListener('click', clearGeminiApiKey);
             modalCloseGeminiApiKeyBtn.addEventListener('click', () => {
                 geminiApiKeyModal.classList.remove('show'); // Hide the modal
-                // Optional: If closing without saving, you might want to warn or prevent form submission
+            });
+
+            // NEW: Settings Icon click listener
+            settingsIcon.addEventListener('click', () => {
+                geminiApiKeyModal.classList.add('show'); // Show the modal when icon is clicked
+                modalGeminiApiKeyInput.value = localStorage.getItem('geminiApiKey') || ''; // Ensure input is populated
             });
         });
         // --- End Local Storage Functions ---
@@ -492,10 +523,10 @@ Pola Pengembangan Teks Eksposisi" required class="focus:ring-2 focus:ring-blue-3
         examForm.addEventListener('submit', async (event) => {
             event.preventDefault(); // Mencegah form submit secara default
 
-            // NEW: Get API Key from localStorage
+            // Get API Key from localStorage
             const apiKey = localStorage.getItem('geminiApiKey');
 
-            // NEW: Validate API Key before proceeding
+            // Validate API Key before proceeding
             if (!apiKey || apiKey.trim() === '') {
                 showMessageBox('Kunci API Gemini diperlukan untuk membuat soal. Silakan masukkan.', true);
                 geminiApiKeyModal.classList.add('show'); // Show modal if key is missing
