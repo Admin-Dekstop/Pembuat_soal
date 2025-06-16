@@ -114,6 +114,99 @@
             font-size: 0.875rem;
             margin-top: 0.25rem;
         }
+        /* Custom list style for options */
+        ol.list-alpha {
+            list-style-type: lower-alpha;
+            padding-left: 1.5em; /* Adjust as needed */
+        }
+
+        /* Modal Styles - NEW */
+        .api-key-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        .api-key-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: #ffffff;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease-in-out;
+        }
+        .api-key-modal.show .modal-content {
+            transform: translateY(0);
+        }
+        .modal-content h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #3b82f6; /* Blue-500 */
+            margin-bottom: 1rem;
+        }
+        .modal-content p {
+            color: #4b5563;
+            margin-bottom: 1.5rem;
+        }
+        .modal-content input[type="password"] {
+            margin-bottom: 1.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            width: 100%;
+        }
+        .modal-content .button-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap; /* Allow buttons to wrap on small screens */
+        }
+        .modal-content .button-group button {
+            flex-grow: 1; /* Allow buttons to grow */
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .modal-content .button-group .btn-save {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .modal-content .button-group .btn-save:hover {
+            background-color: #2563eb;
+        }
+        .modal-content .button-group .btn-clear {
+            background-color: #ef4444; /* Red-500 */
+            color: white;
+        }
+        .modal-content .button-group .btn-clear:hover {
+            background-color: #dc2626; /* Red-600 */
+        }
+        .modal-content .button-group .btn-close {
+            background-color: #6b7280; /* Gray-500 */
+            color: white;
+        }
+        .modal-content .button-group .btn-close:hover {
+            background-color: #4b5563; /* Gray-600 */
+        }
     </style>
 </head>
 <body class="p-4 sm:p-6 lg:p-8">
@@ -261,6 +354,27 @@ Pola Pengembangan Teks Eksposisi" required class="focus:ring-2 focus:ring-blue-3
         </section>
     </div>
 
+    <!-- API Keys Modal - NEW HTML STRUCTURE -->
+    <div id="geminiApiKeyModal" class="api-key-modal">
+        <div class="modal-content">
+            <h2>Masukkan Kunci API Gemini Anda</h2>
+            <p>
+                Untuk menggunakan fitur pembuatan soal, Anda perlu memasukkan Kunci API Gemini Anda.
+                Kunci ini akan disimpan secara lokal di browser Anda dan tidak akan dikirim ke server mana pun.
+            </p>
+            <input type="password" id="modalGeminiApiKeyInput" placeholder="Contoh: AIzaSyC_..." class="focus:ring-2 focus:ring-blue-300">
+            <div class="button-group">
+                <button id="modalSaveGeminiApiKeyBtn" class="btn-save">Simpan Kunci</button>
+                <button id="modalClearGeminiApiKeyBtn" class="btn-clear">Hapus Kunci</button>
+                <button id="modalCloseGeminiApiKeyBtn" class="btn-close">Tutup</button>
+            </div>
+            <p class="mt-4 text-sm text-gray-500">
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline">Dapatkan Kunci API Gemini Anda di sini</a>
+            </p>
+        </div>
+    </div>
+    <!-- END API Keys Modal -->
+
     <script>
         const examForm = document.getElementById('examForm');
         const loadingSpinner = document.getElementById('loadingSpinner');
@@ -270,6 +384,13 @@ Pola Pengembangan Teks Eksposisi" required class="focus:ring-2 focus:ring-blue-3
         const examQuestionsDiv = document.getElementById('examQuestions');
         const copyQuestionsBtn = document.getElementById('copyQuestionsBtn');
         const messageBox = document.getElementById('messageBox');
+
+        // NEW: Modal Elements
+        const geminiApiKeyModal = document.getElementById('geminiApiKeyModal');
+        const modalGeminiApiKeyInput = document.getElementById('modalGeminiApiKeyInput');
+        const modalSaveGeminiApiKeyBtn = document.getElementById('modalSaveGeminiApiKeyBtn');
+        const modalClearGeminiApiKeyBtn = document.getElementById('modalClearGeminiApiKeyBtn');
+        const modalCloseGeminiApiKeyBtn = document.getElementById('modalCloseGeminiApiKeyBtn');
 
         // Fungsi untuk menampilkan pesan temporer di messageBox
         function showMessageBox(message, isError = false) {
@@ -284,7 +405,7 @@ Pola Pengembangan Teks Eksposisi" required class="focus:ring-2 focus:ring-blue-3
             }, 3000); // Pesan akan hilang setelah 3 detik
         }
 
-        // --- Local Storage Functions ---
+        // --- Local Storage Functions (Adapted) ---
         const formFields = [
             'namaGuru', 'namaSekolah', 'mataPelajaran', 'kelasSemester',
             'jenisPenilaian', 'kurikulum', 'tujuanPembelajaran',
@@ -323,11 +444,37 @@ Pola Pengembangan Teks Eksposisi" required class="focus:ring-2 focus:ring-blue-3
             }
         }
 
-        // Attach event listeners for saving data
-        document.addEventListener('DOMContentLoaded', () => {
-            loadFormData(); // Load data when page loads
+        // NEW: Function to save Gemini API Key
+        function saveGeminiApiKey() {
+            const apiKey = modalGeminiApiKeyInput.value.trim();
+            if (apiKey) {
+                localStorage.setItem('geminiApiKey', apiKey);
+                geminiApiKeyModal.classList.remove('show'); // Hide modal
+                showMessageBox('Kunci API Gemini berhasil disimpan.', false);
+            } else {
+                showMessageBox('Kunci API Gemini tidak boleh kosong.', true);
+            }
+        }
 
-            // Add input event listeners to save data on change
+        // NEW: Function to clear Gemini API Key
+        function clearGeminiApiKey() {
+            localStorage.removeItem('geminiApiKey');
+            modalGeminiApiKeyInput.value = '';
+            showMessageBox('Kunci API Gemini telah dihapus.', false);
+        }
+
+        // Attach event listeners for saving data and modal
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFormData(); // Load form data when page loads
+
+            // Check and show modal for API Key if not present
+            const storedApiKey = localStorage.getItem('geminiApiKey');
+            if (!storedApiKey || storedApiKey.trim() === '') {
+                geminiApiKeyModal.classList.add('show');
+            }
+            modalGeminiApiKeyInput.value = storedApiKey || ''; // Populate modal input with existing key
+
+            // Add input event listeners to save form data on change
             formFields.forEach(id => {
                 const element = document.getElementById(id);
                 if (element) {
@@ -339,11 +486,30 @@ Pola Pengembangan Teks Eksposisi" required class="focus:ring-2 focus:ring-blue-3
             document.querySelectorAll('input[name="outputOption"]').forEach(radio => {
                 radio.addEventListener('change', saveFormData);
             });
+
+            // NEW: Modal button event listeners
+            modalSaveGeminiApiKeyBtn.addEventListener('click', saveGeminiApiKey);
+            modalClearGeminiApiKeyBtn.addEventListener('click', clearGeminiApiKey);
+            modalCloseGeminiApiKeyBtn.addEventListener('click', () => {
+                geminiApiKeyModal.classList.remove('show');
+                // Optional: If closing without saving, you might want to warn or prevent form submission
+            });
         });
         // --- End Local Storage Functions ---
 
         examForm.addEventListener('submit', async (event) => {
             event.preventDefault(); // Mencegah form submit secara default
+
+            // NEW: Get API Key from localStorage
+            const apiKey = localStorage.getItem('geminiApiKey');
+
+            // NEW: Validate API Key before proceeding
+            if (!apiKey || apiKey.trim() === '') {
+                showMessageBox('Kunci API Gemini diperlukan untuk membuat soal. Silakan masukkan.', true);
+                geminiApiKeyModal.classList.add('show'); // Show modal if key is missing
+                modalGeminiApiKeyInput.value = ''; // Clear modal input to force re-entry if it was just cleared
+                return;
+            }
 
             errorMessage.classList.add('hidden'); // Sembunyikan pesan error sebelumnya
             resultsSection.classList.add('hidden'); // Sembunyikan hasil sebelumnya
@@ -399,7 +565,6 @@ Pola Pengembangan Teks Eksposisi" required class="focus:ring-2 focus:ring-blue-3
                 return;
             }
 
-
             // Bangun prompt untuk Gemini API
             const prompt = `
             Anda adalah seorang generator soal ujian ahli untuk guru. Buatlah soal ujian berdasarkan informasi detail berikut:
@@ -442,7 +607,7 @@ Pola Pengembangan Teks Eksposisi" required class="focus:ring-2 focus:ring-blue-3
 
             try {
                 // Konfigurasi Gemini API
-                const apiKey = ""; // Dibiarkan kosong, akan diisi oleh runtime Canvas
+                // Kunci API diambil dari localStorage
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
                 const payload = {
@@ -531,7 +696,7 @@ Pola Pengembangan Teks Eksposisi" required class="focus:ring-2 focus:ring-blue-3
 
             } catch (error) {
                 console.error('Error generating questions:', error);
-                errorMessage.textContent = `Terjadi kesalahan saat membuat soal: ${error.message}. Mohon coba lagi.`;
+                errorMessage.textContent = `Terjadi kesalahan saat membuat soal: ${error.message}. Mohon coba lagi. Pastikan Kunci API Gemini Anda sudah benar.`;
                 errorMessage.classList.remove('hidden');
             } finally {
                 loadingSpinner.style.display = 'none'; // Sembunyikan spinner
