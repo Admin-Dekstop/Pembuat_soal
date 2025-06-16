@@ -582,7 +582,7 @@ Pola Pengembangan Teks Eksposisi" required class="focus:ring-2 focus:ring-blue-3
                 return;
             }
 
-            if (totalSoalDiminta > 20) { // Batasi jumlah soal untuk performa dan menghindari timeout API
+            if (totalSoalDiminta > 50) { // Batasi jumlah soal untuk performa dan menghindari timeout API
                 errorMessage.textContent = 'Jumlah soal maksimal adalah 20 untuk menjaga performa.';
                 errorMessage.classList.remove('hidden');
                 loadingSpinner.style.display = 'none';
