@@ -604,7 +604,7 @@ Metode Eliminasi" required class="focus:ring-2 focus:ring-emerald-300"></textare
                 return;
             }
 
-            if (totalSoalDiminta > 20) { // Batasi jumlah soal untuk performa dan menghindari timeout API
+            if (totalSoalDiminta > 90) { // Batasi jumlah soal untuk performa dan menghindari timeout API
                 errorMessage.textContent = 'Jumlah soal maksimal adalah 20 untuk menjaga performa.';
                 errorMessage.classList.remove('hidden');
                 loadingSpinner.style.display = 'none';
